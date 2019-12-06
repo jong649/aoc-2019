@@ -1,0 +1,110 @@
+<!-- 
+  I couldn't get this working with arrays;
+  it looks like I need to read more about 
+  Sets and Maps!
+  Thanks to https://repl.it/@jsacevedo/Day-3-Crossed-Wires  
+-->
+
+<html>
+  <head>
+    <title>Day 3</title>
+  </head>
+  <body>
+    <div id="main" style="background: gray;"></div>
+    <script src="./stepData.js"></script>
+    <script type="text/javascript">
+      const testPath1 = ["R8", "U5", "L5", "D3"];
+      const testPath2 = ["U7", "R6", "D4", "L4"];
+      const inputWire1 = steps1String;
+      const inputWire2 = steps2String;
+
+      class Point {
+        constructor(x, y) {
+          (this.x = Number(x)), (this.y = Number(y));
+        }
+      }
+
+      class Wire {
+        constructor(wire) {
+          this.wire = wire.split(",");
+          this.wirePath = new Set();
+          this.wirePoint = new Point(0, 0);
+          this.steps = new Map();
+          this.totalSteps = 0;
+          this.intersectPoints = null;
+          this.manhattanDistance = null;
+          this.shortestSteps = null;
+        }
+
+        travel(path) {
+          for (let i = 0; i < path.length; i++) {
+            this.instruction(path[i]);
+          }
+        }
+
+        instruction(vector) {
+          const direction = vector[0];
+          let distance = Number(vector.slice(1));
+
+          while (distance > 0) {
+            switch (direction) {
+              case "D":
+                this.wirePoint.y--;
+                break;
+              case "U":
+                this.wirePoint.y++;
+                break;
+              case "R":
+                this.wirePoint.x++;
+                break;
+              case "L":
+                this.wirePoint.x--;
+                break;
+            }
+            let point = `${this.wirePoint.x},${this.wirePoint.y}`;
+            this.wirePath.add(point);
+            this.totalSteps++;
+            this.steps.set(point, this.totalSteps);
+            distance--;
+          }
+        }
+
+        intersection(secondWire) {
+          this.intersectPoints = new Set(
+            [...this.wirePath].filter(x => secondWire.wirePath.has(x))
+          );
+        }
+
+        distance() {
+          const allDistances = [...this.intersectPoints]
+            .map(values => values.split(",").map(Number))
+            .map(([i, j]) => Math.abs(i) + Math.abs(j));
+          this.manhattanDistance = Math.min(...allDistances);
+        }
+
+        delay(secondWire) {
+          const allSteps = [...this.intersectPoints].map(
+            values => this.steps.get(values) + secondWire.steps.get(values)
+          );
+          this.shortestSteps = Math.min(...allSteps);
+        }
+      }
+
+      const wire1 = new Wire(inputWire1);
+      const wire2 = new Wire(inputWire2);
+
+      wire1.travel(wire1.wire);
+      wire2.travel(wire2.wire);
+      wire1.intersection(wire2);
+      wire2.intersection(wire1);
+      wire1.distance();
+      console.log("----------Answer to Part 1----------");
+      console.log(wire1.manhattanDistance);
+      console.log("----------Answer to Part 1----------");
+      wire1.delay(wire2);
+      console.log("----------Answer to Part 2----------");
+      console.log(wire1.shortestSteps);
+      console.log("----------Answer to Part 2----------");
+    </script>
+  </body>
+</html>
